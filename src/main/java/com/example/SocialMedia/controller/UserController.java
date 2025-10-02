@@ -1,0 +1,29 @@
+package com.example.SocialMedia.controller;
+
+import com.example.SocialMedia.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        String email = request.get("email");
+        String password = request.get("password");
+
+        userService.signup(username, email, password);
+        return ResponseEntity.status(201).body("User registered successfully");
+    }
+}
