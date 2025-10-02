@@ -41,9 +41,6 @@ public class User {
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes;
-
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private ModeratorRequest moderatorRequest;
 
