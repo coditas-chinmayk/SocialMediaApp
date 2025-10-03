@@ -45,6 +45,7 @@ public class User {
     private ModeratorRequest moderatorRequest;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", nullable = false),
+    inverseJoinColumns = @JoinColumn(name = "role_id", nullable = false))
     private Set<Role> roles = new HashSet<>();
 }

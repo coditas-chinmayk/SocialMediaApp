@@ -1,5 +1,7 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.dto.UserResponseDTO;
+import com.example.SocialMedia.entity.Role;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,12 @@ public class AuthController {
 
         String token = authService.login(username, password);
         User user = authService.getUserFromUsername(username);
+
+        UserResponseDTO userResponse = new UserResponseDTO();
+        userResponse.setId(user.getId());
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        userResponse.setRoles(user.getRoles().stream().map(Role::getName).toList());
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);

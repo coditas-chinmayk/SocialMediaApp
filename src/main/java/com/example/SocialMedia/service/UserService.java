@@ -41,13 +41,13 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        // Assign default USER role
-        Role userRole = roleRepository.findByName("USER")
+        // Assigning default AUTHOR role
+        Role userRole = roleRepository.findByName("AUTHOR")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         Set<Role> roles = new HashSet<>();
         roles.add(userRole);
         user.setRoles(roles);
 
-        return userRepository.save(user);
+        return (User) userRepository.save(user);
     }
 }

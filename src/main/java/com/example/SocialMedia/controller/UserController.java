@@ -23,6 +23,10 @@ public class UserController {
         String email = request.get("email");
         String password = request.get("password");
 
+        if (username == null || username.isBlank() || email == null || email.isBlank() || password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body("Username, email, and password are required");
+        }
+
         userService.signup(username, email, password);
         return ResponseEntity.status(201).body("User registered successfully");
     }
