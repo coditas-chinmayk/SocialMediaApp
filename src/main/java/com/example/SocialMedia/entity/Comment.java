@@ -20,7 +20,11 @@ public class Comment {
     @Column(nullable = false, length = 1000)
     private String content;
 
+    @Enumerated(EnumType.STRING)
+    private CommentStatus commentStatus = CommentStatus.PENDING;
+
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Relations
     @ManyToOne(fetch = FetchType.EAGER)
