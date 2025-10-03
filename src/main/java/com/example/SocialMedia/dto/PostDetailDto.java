@@ -6,5 +6,5 @@ import java.util.List;
 
 @Data
 public class PostDetailDto extends PostDto {
-    private List<Comment> comments;
+    private List<CommentDto> comments;
 }

@@ -1,8 +1,8 @@
 package com.example.SocialMedia.service;
 
 import com.example.SocialMedia.dto.*;
-import com.example.SocialMedia.dto.Comment;
 import com.example.SocialMedia.entity.*;
+import com.example.SocialMedia.entity.Comment;
 import com.example.SocialMedia.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class PostService {
 
     public List<PostDto> getHomeFeed() {
         return postRepository.findByPostStatus(PostStatus.APPROVED).stream()
-                .map(this::mapToPostDto)
+                .map(PostService::mapToPostDto)
                 .collect(Collectors.toList());
     }
 
@@ -53,8 +53,8 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
 
-        List<Comment> approvedComments = commentRepository.findByPostIdAndCommentStatus(postId, CommentStatus.APPROVED).stream()
-                .map(this::mapToCommentDto)
+        List<CommentDto> approvedComments = commentRepository.findByPostIdAndCommentStatus(postId, CommentStatus.APPROVED).stream()
+                .map(PostService::mapToCommentDto)
                 .collect(Collectors.toList());
 
         PostDetailDto dto = new PostDetailDto();
@@ -68,7 +68,7 @@ public class PostService {
         return dto;
     }
 
-    private PostDto mapToPostDto(Post post) {
+    public static PostDto mapToPostDto(Post post) {
         PostDto dto = new PostDto();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -79,8 +79,8 @@ public class PostService {
         return dto;
     }
 
-    private Comment mapToCommentDto(com.example.SocialMedia.entity.Comment comment) {
-        Comment dto = new Comment();
+    public static CommentDto mapToCommentDto(Comment comment) {
+        CommentDto dto = new CommentDto();
         dto.setId(comment.getId());
         dto.setContent(comment.getContent());
         dto.setCommentStatus(comment.getCommentStatus());
@@ -89,7 +89,7 @@ public class PostService {
         return dto;
     }
 
-    private UserSummaryDto mapToUserSummaryDto(User user) {
+    public static UserSummaryDto mapToUserSummaryDto(User user) {
         UserSummaryDto dto = new UserSummaryDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
