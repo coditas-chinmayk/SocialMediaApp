@@ -2,12 +2,12 @@ package com.example.SocialMedia.service;
 
 import com.example.SocialMedia.dto.*;
 import com.example.SocialMedia.entity.*;
-import com.example.SocialMedia.entity.Comment;
 import com.example.SocialMedia.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,7 +35,7 @@ public class PostService {
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .postStatus(PostStatus.PENDING)
+                .postStatus(ContentStatus.PENDING)
                 .author(author)
                 .build();
 
@@ -44,7 +44,7 @@ public class PostService {
     }
 
     public List<PostDto> getHomeFeed() {
-        return postRepository.findByPostStatus(PostStatus.APPROVED).stream()
+        return postRepository.findByPostStatus(ContentStatus.APPROVED).stream()
                 .map(PostService::mapToPostDto)
                 .collect(Collectors.toList());
     }
@@ -53,7 +53,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
 
-        List<CommentDto> approvedComments = commentRepository.findByPostIdAndCommentStatus(postId, CommentStatus.APPROVED).stream()
+        List<CommentDto> approvedComments = commentRepository.findByPostIdAndCommentStatus(postId, ContentStatus.APPROVED).stream()
                 .map(PostService::mapToCommentDto)
                 .collect(Collectors.toList());
 
@@ -66,6 +66,32 @@ public class PostService {
         dto.setAuthor(mapToUserSummaryDto(post.getAuthor()));
         dto.setComments(approvedComments);
         return dto;
+    }
+
+    @Transactional
+    public PostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found"));
+
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("Only the post author can edit this post");
+        }
+
+        if (post.getPostStatus() != ContentStatus.FLAGGED) {
+            throw new IllegalStateException("Only flagged posts can be edited");
+        }
+
+        if (request.getTitle() == null || request.getTitle().isBlank() || request.getContent() == null || request.getContent().isBlank()) {
+            throw new IllegalArgumentException("Title and content cannot be empty");
+        }
+
+        post.setTitle(request.getTitle());
+        post.setContent(request.getContent());
+        post.setPostStatus(ContentStatus.PENDING);
+        post.setUpdatedAt(LocalDateTime.now());
+
+        post = postRepository.save(post);
+        return mapToPostDto(post);
     }
 
     public static PostDto mapToPostDto(Post post) {
@@ -85,6 +111,7 @@ public class PostService {
         dto.setContent(comment.getContent());
         dto.setCommentStatus(comment.getCommentStatus());
         dto.setCreatedAt(comment.getCreatedAt());
+        dto.setPostId(comment.getPost().getId());
         dto.setAuthor(mapToUserSummaryDto(comment.getAuthor()));
         return dto;
     }

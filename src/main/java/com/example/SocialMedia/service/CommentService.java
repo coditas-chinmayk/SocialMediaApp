@@ -4,7 +4,7 @@ import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.CreateCommentRequest;
 import com.example.SocialMedia.dto.UserSummaryDto;
 import com.example.SocialMedia.entity.Comment;
-import com.example.SocialMedia.entity.CommentStatus;
+import com.example.SocialMedia.entity.ContentStatus;
 import com.example.SocialMedia.entity.Post;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.repository.CommentRepository;
@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @Service
@@ -44,10 +45,35 @@ public class CommentService {
 
         Comment comment = Comment.builder()
                 .content(request.getContent())
-                .commentStatus(CommentStatus.PENDING)
+                .commentStatus(ContentStatus.PENDING)
                 .author(author)
                 .post(post)
                 .build();
+
+        comment = commentRepository.save(comment);
+        return PostService.mapToCommentDto(comment);
+    }
+
+    @Transactional
+    public CommentDto editFlaggedComment(Long commentId, Long userId, CreateCommentRequest request) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("Only the comment author can edit this comment");
+        }
+
+        if (comment.getCommentStatus() != ContentStatus.FLAGGED) {
+            throw new IllegalStateException("Only flagged comments can be edited");
+        }
+
+        if (request.getContent() == null || request.getContent().isBlank()) {
+            throw new IllegalArgumentException("Content cannot be empty");
+        }
+
+        comment.setContent(request.getContent());
+        comment.setCommentStatus(ContentStatus.PENDING);
+        comment.setUpdatedAt(LocalDateTime.now());
 
         comment = commentRepository.save(comment);
         return PostService.mapToCommentDto(comment);

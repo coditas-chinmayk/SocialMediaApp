@@ -1,6 +1,7 @@
 package com.example.SocialMedia.dto;
 
 import com.example.SocialMedia.entity.CommentStatus;
+import com.example.SocialMedia.entity.ContentStatus;
 import com.example.SocialMedia.entity.Post;
 import com.example.SocialMedia.entity.User;
 import lombok.AllArgsConstructor;
@@ -17,8 +18,8 @@ import java.time.LocalDateTime;
 public class CommentDto {
     private Long id;
     private String content;
-    private CommentStatus commentStatus;
+    private ContentStatus commentStatus;
     private LocalDateTime createdAt;
-    private Post post;
+    private Long postId;
     private UserSummaryDto author;
 }

@@ -21,7 +21,7 @@ public class Comment {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    private CommentStatus commentStatus = CommentStatus.PENDING;
+    private ContentStatus commentStatus = ContentStatus.PENDING;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -34,4 +34,15 @@ public class Comment {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

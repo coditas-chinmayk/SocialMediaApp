@@ -3,7 +3,7 @@ package com.example.SocialMedia.controller;
 import com.example.SocialMedia.dto.CreatePostRequest;
 import com.example.SocialMedia.dto.PostDetailDto;
 import com.example.SocialMedia.dto.PostDto;
-import com.example.SocialMedia.entity.PostStatus;
+import com.example.SocialMedia.entity.ContentStatus;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.PostService;
@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -49,7 +48,7 @@ public class PostController {
 
         // Visibility control: Allow author to see FLAGGED/DENIED posts
         if (!postDetail.getAuthor().getId().equals(user.getId()) &&
-                (postDetail.getPostStatus() == PostStatus.FLAGGED || postDetail.getPostStatus() == PostStatus.DENIED)) {
+                (postDetail.getPostStatus() == ContentStatus.FLAGGED || postDetail.getPostStatus() == ContentStatus.DENIED)) {
             return ResponseEntity.status(403).body(null);
         }
         return ResponseEntity.ok(postDetail);
