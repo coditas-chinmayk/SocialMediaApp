@@ -1,6 +1,7 @@
 package com.example.SocialMedia.controller;
 
 import com.example.SocialMedia.service.UserService;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody Map<String, String> request) {
         String username = request.get("username");
+        @Email
         String email = request.get("email");
         String password = request.get("password");
 
