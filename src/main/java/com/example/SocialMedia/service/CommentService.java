@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -77,5 +79,40 @@ public class CommentService {
 
         comment = commentRepository.save(comment);
         return PostService.mapToCommentDto(comment);
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+
+        // Only the comment author can delete the comment
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("Only the comment author can delete this comment");
+        }
+
+        commentRepository.delete(comment);
+    }
+
+    public List<CommentDto> getCommentsByStatus(ContentStatus status) {
+        return commentRepository.findByCommentStatusOrderByCreatedAtDesc(status).stream()
+                .map(PostService::mapToCommentDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<CommentDto> getApprovedComments() {
+        return getCommentsByStatus(ContentStatus.APPROVED);
+    }
+
+    public List<CommentDto> getPendingComments() {
+        return getCommentsByStatus(ContentStatus.PENDING);
+    }
+
+    public List<CommentDto> getFlaggedComments() {
+        return getCommentsByStatus(ContentStatus.FLAGGED);
+    }
+
+    public List<CommentDto> getDeniedComments() {
+        return getCommentsByStatus(ContentStatus.DENIED);
     }
 }

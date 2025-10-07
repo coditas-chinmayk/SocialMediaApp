@@ -69,7 +69,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
+    public editFlaggedPostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
 
@@ -91,7 +91,20 @@ public class PostService {
         post.setUpdatedAt(LocalDateTime.now());
 
         post = postRepository.save(post);
-        return mapToPostDto(post);
+        return mapToEditedPostDto(post);
+    }
+
+    @Transactional
+    public void deletePost(Long postId, Long userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NoSuchElementException("Post not found"));
+
+        // Only the post author can delete the post
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("Only the post author can delete this post");
+        }
+        // This will automatically delete all associated comments due to CascadeType.ALL
+        postRepository.delete(post);
     }
 
     public static PostDto mapToPostDto(Post post) {
@@ -102,6 +115,15 @@ public class PostService {
         dto.setPostStatus(post.getPostStatus());
         dto.setCreatedAt(post.getCreatedAt());
         dto.setAuthor(mapToUserSummaryDto(post.getAuthor()));
+        return dto;
+    }
+
+    public static editFlaggedPostDto mapToEditedPostDto(Post post) {
+        editFlaggedPostDto dto = new editFlaggedPostDto();
+        dto.setTitle(post.getTitle());
+        dto.setContent(post.getContent());
+        dto.setPostStatus(post.getPostStatus());
+        dto.setUpdatedAt(post.getUpdatedAt());
         return dto;
     }
 
@@ -121,5 +143,27 @@ public class PostService {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         return dto;
+    }
+
+    public List<PostDto> getPostsByStatus(ContentStatus status) {
+        return postRepository.findByPostStatusOrderByCreatedAtDesc(status).stream()
+                .map(PostService::mapToPostDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostDto> getApprovedPosts() {
+        return getPostsByStatus(ContentStatus.APPROVED);
+    }
+
+    public List<PostDto> getPendingPosts() {
+        return getPostsByStatus(ContentStatus.PENDING);
+    }
+
+    public List<PostDto> getFlaggedPosts() {
+        return getPostsByStatus(ContentStatus.FLAGGED);
+    }
+
+    public List<PostDto> getDeniedPosts() {
+        return getPostsByStatus(ContentStatus.DENIED);
     }
 }

@@ -10,6 +10,9 @@ import com.example.SocialMedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.SocialMedia.dto.UserListDto;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -101,6 +104,49 @@ public class UserService {
         dto.setCreatedAt(request.getCreatedAt());
         dto.setUpdatedAt(request.getUpdatedAt());
         dto.setUser(PostService.mapToUserSummaryDto(request.getUser()));
+        return dto;
+    }
+
+    public List<UserListDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(this::mapToUserListDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserListDto> getAllModerators() {
+        List<User> moderators = userRepository.findAllModerators();
+        return moderators.stream()
+                .map(this::mapToUserListDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserListDto> getAllAdmins() {
+        List<User> admins = userRepository.findAllAdmins();
+        return admins.stream()
+                .map(this::mapToUserListDto)
+                .collect(Collectors.toList());
+    }
+
+    private UserListDto mapToUserListDto(User user) {
+        UserListDto dto = new UserListDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setStatus(user.getStatus().name());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setRoles(user.getRoles().stream()
+                .map(role -> role.getName())
+                .collect(Collectors.toList()));
+
+        // Optional: Count posts and comments
+        if (user.getPosts() != null) {
+            dto.setPostCount((long) user.getPosts().size());
+        }
+        if (user.getComments() != null) {
+            dto.setCommentCount((long) user.getComments().size());
+        }
+
         return dto;
     }
 

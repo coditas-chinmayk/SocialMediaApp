@@ -1,10 +1,13 @@
 package com.example.SocialMedia.controller;
 
 import com.example.SocialMedia.dto.ModeratorRequestDto;
+import com.example.SocialMedia.dto.UserListDto;
 import com.example.SocialMedia.dto.UserResponseDTO;
 import com.example.SocialMedia.service.AdminService;
+import com.example.SocialMedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +19,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/moderator-requests")
     public ResponseEntity<List<ModeratorRequestDto>> getModeratorRequests() {
@@ -53,5 +59,23 @@ public class AdminController {
         Long userId = body.get("userId");
         String reason = reasonBody != null ? reasonBody.get("reason") : null;
         return ResponseEntity.status(201).body(adminService.createAdmin(userId, reason));
+    }
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<UserListDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/moderators")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<UserListDto>> getAllModerators() {
+        return ResponseEntity.ok(userService.getAllModerators());
+    }
+
+    @GetMapping("/admins")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<UserListDto>> getAllAdmins() {
+        return ResponseEntity.ok(userService.getAllAdmins());
     }
 }
