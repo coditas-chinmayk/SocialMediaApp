@@ -1,5 +1,6 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.ContentStatus;
 import com.example.SocialMedia.dto.*;
 import com.example.SocialMedia.entity.*;
 import com.example.SocialMedia.repository.*;
@@ -75,7 +76,7 @@ public class PostService {
     }
 
     @Transactional
-    public editFlaggedPostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
+    public EditFlaggedPostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
 
@@ -124,8 +125,19 @@ public class PostService {
         return dto;
     }
 
-    public static editFlaggedPostDto mapToEditedPostDto(Post post) {
-        editFlaggedPostDto dto = new editFlaggedPostDto();
+    public static PostWithModeratorDto mapToPostWithModeratorDto(Post post, User moderator) {
+        PostWithModeratorDto dto = new PostWithModeratorDto();
+        dto.setId(post.getId());
+        dto.setTitle(post.getTitle());
+        dto.setPostStatus(post.getPostStatus());
+        dto.setUpdatedAt(post.getUpdatedAt());
+        dto.setAuthor(mapToUserSummaryDto(post.getAuthor()));
+        dto.setModerator(mapToUserSummaryDto(moderator));
+        return dto;
+    }
+
+    public static EditFlaggedPostDto mapToEditedPostDto(Post post) {
+        EditFlaggedPostDto dto = new EditFlaggedPostDto();
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setPostStatus(post.getPostStatus());

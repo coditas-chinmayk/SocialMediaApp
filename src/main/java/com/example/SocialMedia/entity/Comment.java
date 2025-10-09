@@ -1,13 +1,13 @@
 package com.example.SocialMedia.entity;
 
+import com.example.SocialMedia.Constants.ContentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comments")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

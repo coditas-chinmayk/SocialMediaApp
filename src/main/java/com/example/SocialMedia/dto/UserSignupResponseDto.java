@@ -3,8 +3,7 @@ package com.example.SocialMedia.dto;
 import lombok.Data;
 
 @Data
-public class SignupRequest {
+public class UserSignupResponseDto {
     private String username;
-    private String email;
-    private String password;
+    private String response;
 }

@@ -1,6 +1,6 @@
 package com.example.SocialMedia.dto;
 
-import com.example.SocialMedia.entity.RequestStatus;
+import com.example.SocialMedia.Constants.RequestStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;

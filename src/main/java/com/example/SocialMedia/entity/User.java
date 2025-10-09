@@ -1,5 +1,6 @@
 package com.example.SocialMedia.entity;
 
+import com.example.SocialMedia.Constants.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

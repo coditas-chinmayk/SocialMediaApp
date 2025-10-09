@@ -1,7 +1,7 @@
 package com.example.SocialMedia.repository;
 
 import com.example.SocialMedia.entity.Comment;
-import com.example.SocialMedia.entity.ContentStatus;
+import com.example.SocialMedia.Constants.ContentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

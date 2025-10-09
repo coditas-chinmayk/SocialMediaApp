@@ -1,5 +1,8 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.ContentStatus;
+import com.example.SocialMedia.Constants.RequestStatus;
+import com.example.SocialMedia.Constants.UserStatus;
 import com.example.SocialMedia.dto.ModeratorRequestDto;
 import com.example.SocialMedia.dto.PostDto;
 import com.example.SocialMedia.dto.UserProfileDto;
@@ -16,7 +19,6 @@ import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {

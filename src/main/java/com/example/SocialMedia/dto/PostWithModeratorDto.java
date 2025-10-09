@@ -1,17 +1,16 @@
 package com.example.SocialMedia.dto;
 
-
 import com.example.SocialMedia.Constants.ContentStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class PostDto {
+public class PostWithModeratorDto {
     private Long id;
     private String title;
-    private String content;
     private ContentStatus postStatus;
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private UserSummaryDto author;
+    private UserSummaryDto moderator;
 }

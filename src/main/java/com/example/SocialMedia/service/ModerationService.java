@@ -1,14 +1,17 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.ContentStatus;
+import com.example.SocialMedia.Constants.ModerationType;
+import com.example.SocialMedia.Constants.NotificationType;
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.PostDto;
+import com.example.SocialMedia.dto.PostWithModeratorDto;
 import com.example.SocialMedia.entity.*;
 import com.example.SocialMedia.repository.CommentRepository;
 import com.example.SocialMedia.repository.ModerationActionRepository;
 import com.example.SocialMedia.repository.PostRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,19 +44,24 @@ public class ModerationService {
                 .map(PostService::mapToPostDto)
                 .collect(Collectors.toList());
     }
-    public void moderatorIdCheck(Post post, User moderator) throws IllegalArgumentException{
+    public void moderatorIdCheckForPost(Post post, User moderator) throws IllegalArgumentException{
         if (post.getAuthor().getId().equals(moderator.getId())) {
             throw new IllegalArgumentException("You cannot change the status of your own posts");
         }
     }
+    public void moderatorIdCheckForComment(Comment comment, User moderator) throws IllegalArgumentException{
+        if (comment.getAuthor().getId().equals(moderator.getId())) {
+            throw new IllegalArgumentException("You cannot change the status of your own comments");
+        }
+    }
 
     @Transactional
-    public PostDto approvePost(Long postId, Long moderatorId, String reason) {
+    public PostWithModeratorDto approvePost(Long postId, Long moderatorId, String reason) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-        moderatorIdCheck(post, moderator);
+        moderatorIdCheckForPost(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending posts can be approved");
@@ -75,11 +83,11 @@ public class ModerationService {
                 .build();
         moderationActionRepository.save(action);
 
-        return PostService.mapToPostDto(post);
+        return PostService.mapToPostWithModeratorDto(post, moderator);
     }
 
     @Transactional
-    public PostDto flagPost(Long postId, Long moderatorId, String reason) {
+    public PostWithModeratorDto flagPost(Long postId, Long moderatorId, String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("Reason is required for flagging");
         }
@@ -89,7 +97,7 @@ public class ModerationService {
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
 
-        moderatorIdCheck(post, moderator);
+        moderatorIdCheckForPost(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.APPROVED && post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending or approved posts can be flagged");
@@ -112,14 +120,14 @@ public class ModerationService {
         moderationActionRepository.save(action);
 
         // Notify author
-        String message = "Your post '" + post.getTitle() + "' was flagged for review: " + reason;
+        String message = "Your post '" + post.getTitle() + "' was flagged for review: " + "by moderator "+ moderatorId + reason;
         notificationService.createNotification(post.getAuthor().getId(), NotificationType.POST_FLAGGED, postId, message);
 
-        return PostService.mapToPostDto(post);
+        return PostService.mapToPostWithModeratorDto(post, moderator);
     }
 
     @Transactional
-    public PostDto denyPost(Long postId, Long moderatorId, String reason) {
+    public PostWithModeratorDto denyPost(Long postId, Long moderatorId, String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("Reason is required for denial");
         }
@@ -128,7 +136,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-        moderatorIdCheck(post, moderator);
+        moderatorIdCheckForPost(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending posts can be denied");
@@ -150,7 +158,7 @@ public class ModerationService {
                 .build();
         moderationActionRepository.save(action);
 
-        return PostService.mapToPostDto(post);
+        return PostService.mapToPostWithModeratorDto(post, moderator);
     }
 
 
@@ -166,7 +174,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-        moderatorIdCheck(comment.getPost(), moderator);
+        moderatorIdCheckForComment(comment, moderator);
         if (comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending comments can be approved");
         }
@@ -200,7 +208,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-        moderatorIdCheck(comment.getPost(), moderator);
+        moderatorIdCheckForComment(comment, moderator);
         if (comment.getCommentStatus() != ContentStatus.APPROVED && comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending or approved comments can be flagged");
         }
@@ -238,7 +246,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-        moderatorIdCheck(comment.getPost(), moderator);
+        moderatorIdCheckForComment(comment, moderator);
         if (comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending comments can be denied");
         }

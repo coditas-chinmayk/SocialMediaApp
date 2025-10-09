@@ -1,5 +1,6 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.NotificationType;
 import com.example.SocialMedia.dto.NotificationDto;
 import com.example.SocialMedia.entity.*;
 import com.example.SocialMedia.repository.NotificationRepository;

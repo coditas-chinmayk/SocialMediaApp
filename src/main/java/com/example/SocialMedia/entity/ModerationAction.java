@@ -1,5 +1,7 @@
 package com.example.SocialMedia.entity;
 
+import com.example.SocialMedia.Constants.ContentStatus;
+import com.example.SocialMedia.Constants.ModerationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

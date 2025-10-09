@@ -2,6 +2,7 @@ package com.example.SocialMedia.controller;
 
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.PostDto;
+import com.example.SocialMedia.dto.PostWithModeratorDto;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.ModerationService;
@@ -32,7 +33,7 @@ public class ModeratorController {
 
     @PostMapping("/posts/{postId}/approve")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<PostDto> approvePost(
+    public ResponseEntity<PostWithModeratorDto> approvePost(
             @PathVariable Long postId,
             @RequestBody(required = false) Map<String, String> body) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -43,7 +44,7 @@ public class ModeratorController {
 
     @PostMapping("/posts/{postId}/flag")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<PostDto> flagPost(
+    public ResponseEntity<PostWithModeratorDto> flagPost(
             @PathVariable Long postId,
             @RequestBody Map<String, String> body) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -54,7 +55,7 @@ public class ModeratorController {
 
     @PostMapping("/posts/{postId}/deny")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<PostDto> denyPost(
+    public ResponseEntity<PostWithModeratorDto> denyPost(
             @PathVariable Long postId,
             @RequestBody Map<String, String> body) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

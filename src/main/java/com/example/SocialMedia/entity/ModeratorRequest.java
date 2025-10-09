@@ -1,12 +1,12 @@
 package com.example.SocialMedia.entity;
 
+import com.example.SocialMedia.Constants.RequestStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data

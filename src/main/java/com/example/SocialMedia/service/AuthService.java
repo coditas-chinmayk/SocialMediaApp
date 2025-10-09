@@ -1,7 +1,7 @@
 package com.example.SocialMedia.service;
 
 import com.example.SocialMedia.entity.User;
-import com.example.SocialMedia.entity.UserStatus;
+import com.example.SocialMedia.Constants.UserStatus;
 import com.example.SocialMedia.repository.UserRepository;
 import com.example.SocialMedia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;

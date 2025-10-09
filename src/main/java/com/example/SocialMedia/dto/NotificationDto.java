@@ -1,6 +1,6 @@
 package com.example.SocialMedia.dto;
 
-import com.example.SocialMedia.entity.NotificationType;
+import com.example.SocialMedia.Constants.NotificationType;
 import lombok.Data;
 
 import java.time.LocalDateTime;

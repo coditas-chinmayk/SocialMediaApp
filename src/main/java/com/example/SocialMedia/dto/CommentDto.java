@@ -1,9 +1,6 @@
 package com.example.SocialMedia.dto;
 
-import com.example.SocialMedia.entity.CommentStatus;
-import com.example.SocialMedia.entity.ContentStatus;
-import com.example.SocialMedia.entity.Post;
-import com.example.SocialMedia.entity.User;
+import com.example.SocialMedia.Constants.ContentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

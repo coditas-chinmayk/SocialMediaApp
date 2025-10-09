@@ -1,4 +1,4 @@
-package com.example.SocialMedia.entity;
+package com.example.SocialMedia.Constants;
 
 public enum UserStatus {
     ACTIVE, DELETED, PENDING_MODERATOR;

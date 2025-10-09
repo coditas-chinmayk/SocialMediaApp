@@ -3,8 +3,8 @@ package com.example.SocialMedia.controller;
 import com.example.SocialMedia.dto.CreatePostRequest;
 import com.example.SocialMedia.dto.PostDetailDto;
 import com.example.SocialMedia.dto.PostDto;
-import com.example.SocialMedia.dto.editFlaggedPostDto;
-import com.example.SocialMedia.entity.ContentStatus;
+import com.example.SocialMedia.dto.EditFlaggedPostDto;
+import com.example.SocialMedia.Constants.ContentStatus;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.PostService;
@@ -57,7 +57,7 @@ public class PostController {
 
     @PutMapping("/{postId}")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<editFlaggedPostDto> editFlaggedPost(@PathVariable Long postId, @RequestBody CreatePostRequest request) {
+    public ResponseEntity<EditFlaggedPostDto> editFlaggedPost(@PathVariable Long postId, @RequestBody CreatePostRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
         return ResponseEntity.ok(postService.editFlaggedPost(postId, user.getId(), request));

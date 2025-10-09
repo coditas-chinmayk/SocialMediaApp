@@ -1,5 +1,6 @@
 package com.example.SocialMedia.entity;
 
+import com.example.SocialMedia.Constants.NotificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

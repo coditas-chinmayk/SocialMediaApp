@@ -1,4 +1,4 @@
-package com.example.SocialMedia.entity;
+package com.example.SocialMedia.Constants;
 
 public enum ModerationType {
     POST, COMMENT, ADMIN_CREATION;

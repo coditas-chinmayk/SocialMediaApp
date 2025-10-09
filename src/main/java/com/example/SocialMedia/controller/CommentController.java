@@ -2,7 +2,7 @@ package com.example.SocialMedia.controller;
 
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.CreateCommentRequest;
-import com.example.SocialMedia.entity.ContentStatus;
+import com.example.SocialMedia.Constants.ContentStatus;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.CommentService;

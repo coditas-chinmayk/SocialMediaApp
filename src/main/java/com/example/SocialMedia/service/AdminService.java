@@ -1,5 +1,8 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.ModerationType;
+import com.example.SocialMedia.Constants.RequestStatus;
+import com.example.SocialMedia.Constants.UserStatus;
 import com.example.SocialMedia.dto.ModeratorRequestDto;
 import com.example.SocialMedia.dto.UserResponseDTO;
 import com.example.SocialMedia.dto.UserSummaryDto;
@@ -120,14 +123,13 @@ public class AdminService {
         Role moderatorRole = roleRepository.findByName("MODERATOR")
                 .orElseThrow(() -> new NoSuchElementException("Moderator role not found"));
 
-        // Prevent Moderators from becoming Admins
-        if (user.getRoles().stream().anyMatch(role -> role.getName().equals("MODERATOR") && !user.getRoles().contains(adminRole))) {
-            throw new IllegalStateException("Moderators cannot be promoted to Admins");
-        }
+        Role authorRole = roleRepository.findByName("AUTHOR")
+                .orElseThrow(()-> new NoSuchElementException("Author Role not found"));
 
         // Add ADMIN and MODERATOR roles
         user.getRoles().add(adminRole);
         user.getRoles().add(moderatorRole); // Admins can moderate
+        user.getRoles().add(authorRole);
         user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
 

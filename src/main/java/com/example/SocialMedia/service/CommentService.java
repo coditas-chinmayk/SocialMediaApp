@@ -2,9 +2,8 @@ package com.example.SocialMedia.service;
 
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.CreateCommentRequest;
-import com.example.SocialMedia.dto.UserSummaryDto;
 import com.example.SocialMedia.entity.Comment;
-import com.example.SocialMedia.entity.ContentStatus;
+import com.example.SocialMedia.Constants.ContentStatus;
 import com.example.SocialMedia.entity.Post;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.repository.CommentRepository;

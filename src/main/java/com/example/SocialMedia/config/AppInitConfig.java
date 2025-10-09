@@ -2,7 +2,7 @@ package com.example.SocialMedia.config;
 
 import com.example.SocialMedia.entity.Role;
 import com.example.SocialMedia.entity.User;
-import com.example.SocialMedia.entity.UserStatus;
+import com.example.SocialMedia.Constants.UserStatus;
 import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
