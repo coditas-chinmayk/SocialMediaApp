@@ -88,7 +88,7 @@ public class CommentService {
 
         // Only the comment author can delete the comment
         if (!comment.getAuthor().getId().equals(userId)) {
-            throw new IllegalStateException("Only the comment author can delete this comment");
+            throw new IllegalStateException(" Only the comment author can delete this comment");
         }
 
         commentRepository.delete(comment);

@@ -38,9 +38,15 @@ public class PostService {
                 .postStatus(ContentStatus.PENDING)
                 .author(author)
                 .build();
-
+        if (hasRole(author, "SUPER_ADMIN")) {
+            post.setPostStatus(ContentStatus.APPROVED);
+        }
         post = postRepository.save(post);
         return mapToPostDto(post);
+    }
+    private boolean hasRole(User user, String roleName) {
+        return user.getRoles().stream()
+                .anyMatch(role -> roleName.equals(role.getName()));
     }
 
     public List<PostDto> getHomeFeed() {

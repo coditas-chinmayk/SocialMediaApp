@@ -170,7 +170,7 @@ public class AdminService {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
-        dto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+        dto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
         return dto;
     }
 }

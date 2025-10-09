@@ -25,6 +25,7 @@ public class CommentController {
     private AuthService authService;
 
     @PostMapping("/posts/{postId}/comment")
+    @PreAuthorize("hasRole('AUTHOR')")
     public ResponseEntity<CommentDto> createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);

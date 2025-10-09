@@ -41,6 +41,11 @@ public class ModerationService {
                 .map(PostService::mapToPostDto)
                 .collect(Collectors.toList());
     }
+    public void moderatorIdCheck(Post post, User moderator) throws IllegalArgumentException{
+        if (post.getAuthor().getId().equals(moderator.getId())) {
+            throw new IllegalArgumentException("You cannot change the status of your own posts");
+        }
+    }
 
     @Transactional
     public PostDto approvePost(Long postId, Long moderatorId, String reason) {
@@ -48,6 +53,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+        moderatorIdCheck(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending posts can be approved");
@@ -82,6 +88,8 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+
+        moderatorIdCheck(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.APPROVED && post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending or approved posts can be flagged");
@@ -120,6 +128,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+        moderatorIdCheck(post, moderator);
 
         if (post.getPostStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending posts can be denied");
@@ -157,7 +166,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-
+        moderatorIdCheck(comment.getPost(), moderator);
         if (comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending comments can be approved");
         }
@@ -191,7 +200,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-
+        moderatorIdCheck(comment.getPost(), moderator);
         if (comment.getCommentStatus() != ContentStatus.APPROVED && comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending or approved comments can be flagged");
         }
@@ -229,7 +238,7 @@ public class ModerationService {
                 .orElseThrow(() -> new NoSuchElementException("Comment not found"));
         User moderator = userRepository.findById(moderatorId)
                 .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
-
+        moderatorIdCheck(comment.getPost(), moderator);
         if (comment.getCommentStatus() != ContentStatus.PENDING) {
             throw new IllegalStateException("Only pending comments can be denied");
         }

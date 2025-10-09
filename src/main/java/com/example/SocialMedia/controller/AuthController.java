@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,7 +34,7 @@ public class AuthController {
         userResponse.setId(user.getId());
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
-        userResponse.setRoles(user.getRoles().stream().map(Role::getName).toList());
+        userResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
