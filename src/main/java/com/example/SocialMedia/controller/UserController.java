@@ -4,6 +4,7 @@ import com.example.SocialMedia.dto.*;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,13 +24,13 @@ public class UserController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserSignupResponseDto> signup(@RequestBody UserSignupDto request) {
+    public ResponseEntity<UserSignupResponseDto> signup(@RequestBody @Valid UserSignupDto request) {
         String username = request.getUsername();
         String email = request.getEmail();
         String password = request.getPassword();
         UserSignupResponseDto userSignupResponseDto = new UserSignupResponseDto();
-        userSignupResponseDto.setUsername(username);
-        userSignupResponseDto.setResponse("is registered successfully");
+//        userSignupResponseDto.setUsername(username);
+        userSignupResponseDto.setResponse(username + " is registered successfully");
         userService.signup(username, email, password);
         return ResponseEntity.status(201).body(userSignupResponseDto);
     }

@@ -5,7 +5,8 @@ import com.example.SocialMedia.dto.PostDto;
 import com.example.SocialMedia.dto.PostWithModeratorDto;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.service.AuthService;
-import com.example.SocialMedia.service.ModerationService;
+import com.example.SocialMedia.service.CommentService;
+import com.example.SocialMedia.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,15 +21,18 @@ import java.util.Map;
 public class ModeratorController {
 
     @Autowired
-    private ModerationService moderationService;
+    private PostService postService;
 
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private CommentService commentService;
+
     @GetMapping("/posts/pending")
     @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<List<PostDto>> getPendingPosts() {
-        return ResponseEntity.ok(moderationService.getPendingPosts());
+        return ResponseEntity.ok(postService.getPendingPosts());
     }
 
     @PostMapping("/posts/{postId}/approve")
@@ -39,7 +43,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(moderationService.approvePost(postId, moderator.getId(), reason));
+        return ResponseEntity.ok(postService.approvePost(postId, moderator.getId(), reason));
     }
 
     @PostMapping("/posts/{postId}/flag")
@@ -50,7 +54,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(moderationService.flagPost(postId, moderator.getId(), reason));
+        return ResponseEntity.ok(postService.flagPost(postId, moderator.getId(), reason));
     }
 
     @PostMapping("/posts/{postId}/deny")
@@ -61,13 +65,13 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(moderationService.denyPost(postId, moderator.getId(), reason));
+        return ResponseEntity.ok(postService.denyPost(postId, moderator.getId(), reason));
     }
 
     @GetMapping("/comments/pending")
     @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<List<CommentDto>> getPendingComments() {
-        return ResponseEntity.ok(moderationService.getPendingComments());
+        return ResponseEntity.ok(commentService.getPendingComments());
     }
 
     @PostMapping("/comments/{commentId}/approve")
@@ -78,7 +82,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(moderationService.approveComment(commentId, moderator.getId(), reason));
+        return ResponseEntity.ok(commentService.approveComment(commentId, moderator.getId(), reason));
     }
 
     @PostMapping("/comments/{commentId}/flag")
@@ -89,7 +93,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(moderationService.flagComment(commentId, moderator.getId(), reason));
+        return ResponseEntity.ok(commentService.flagComment(commentId, moderator.getId(), reason));
     }
 
     @PostMapping("/comments/{commentId}/deny")
@@ -100,6 +104,6 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(moderationService.denyComment(commentId, moderator.getId(), reason));
+        return ResponseEntity.ok(commentService.denyComment(commentId, moderator.getId(), reason));
     }
 }

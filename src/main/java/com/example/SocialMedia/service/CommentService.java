@@ -1,12 +1,16 @@
 package com.example.SocialMedia.service;
 
+import com.example.SocialMedia.Constants.ModerationType;
+import com.example.SocialMedia.Constants.NotificationType;
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.CreateCommentRequest;
 import com.example.SocialMedia.entity.Comment;
 import com.example.SocialMedia.Constants.ContentStatus;
+import com.example.SocialMedia.entity.ModerationAction;
 import com.example.SocialMedia.entity.Post;
 import com.example.SocialMedia.entity.User;
 import com.example.SocialMedia.repository.CommentRepository;
+import com.example.SocialMedia.repository.ModerationActionRepository;
 import com.example.SocialMedia.repository.PostRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,12 +28,17 @@ public class CommentService {
     private UserRepository userRepository;
     private CommentRepository commentRepository;
     private PostRepository postRepository;
+    private ModerationActionRepository moderationActionRepository;
 
     @Autowired
-    public CommentService(UserRepository userRepository, CommentRepository commentRepository, PostRepository postRepository) {
+    private NotificationService notificationService;
+
+    @Autowired
+    public CommentService(UserRepository userRepository, CommentRepository commentRepository, PostRepository postRepository, ModerationActionRepository moderationActionRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
+        this.moderationActionRepository = moderationActionRepository;
     }
 
     @Transactional
@@ -98,6 +107,116 @@ public class CommentService {
                 .map(PostService::mapToCommentDto)
                 .collect(Collectors.toList());
     }
+
+
+    public void moderatorIdCheckForComment(Comment comment, User moderator) throws IllegalArgumentException{
+        if (comment.getAuthor().getId().equals(moderator.getId())) {
+            throw new IllegalArgumentException("You cannot change the status of your own comments");
+        }
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public CommentDto approveComment(Long commentId, Long moderatorId, String reason) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+        User moderator = userRepository.findById(moderatorId)
+                .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+        moderatorIdCheckForComment(comment, moderator);
+        if (comment.getCommentStatus() != ContentStatus.PENDING) {
+            throw new IllegalStateException("Only pending comments can be approved");
+        }
+
+        ContentStatus previousStatus = comment.getCommentStatus();
+        comment.setCommentStatus(ContentStatus.APPROVED);
+        comment.setUpdatedAt(LocalDateTime.now());
+        commentRepository.save(comment);
+
+        ModerationAction action = ModerationAction.builder()
+                .type(ModerationType.COMMENT)
+                .targetId(commentId)
+                .previousStatus(previousStatus)
+                .newStatus(ContentStatus.APPROVED)
+                .reason(reason)
+                .moderator(moderator)
+                .actionAt(LocalDateTime.now())
+                .build();
+        moderationActionRepository.save(action);
+
+        return PostService.mapToCommentDto(comment);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public CommentDto flagComment(Long commentId, Long moderatorId, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Reason is required for flagging");
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+        User moderator = userRepository.findById(moderatorId)
+                .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+        moderatorIdCheckForComment(comment, moderator);
+        if (comment.getCommentStatus() != ContentStatus.APPROVED && comment.getCommentStatus() != ContentStatus.PENDING) {
+            throw new IllegalStateException("Only pending or approved comments can be flagged");
+        }
+
+        ContentStatus previousStatus = comment.getCommentStatus();
+        comment.setCommentStatus(ContentStatus.FLAGGED);
+        comment.setUpdatedAt(LocalDateTime.now());
+        commentRepository.save(comment);
+
+        ModerationAction action = ModerationAction.builder()
+                .type(ModerationType.COMMENT)
+                .targetId(commentId)
+                .previousStatus(previousStatus)
+                .newStatus(ContentStatus.FLAGGED)
+                .reason(reason)
+                .moderator(moderator)
+                .actionAt(LocalDateTime.now())
+                .build();
+        moderationActionRepository.save(action);
+
+        // Notify author
+        String message = "Your comment was flagged for review: " + reason;
+        notificationService.createNotification(comment.getAuthor().getId(), NotificationType.COMMENT_FLAGGED, commentId, message);
+
+        return PostService.mapToCommentDto(comment);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public CommentDto denyComment(Long commentId, Long moderatorId, String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Reason is required for denial");
+        }
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("Comment not found"));
+        User moderator = userRepository.findById(moderatorId)
+                .orElseThrow(() -> new NoSuchElementException("Moderator not found"));
+        moderatorIdCheckForComment(comment, moderator);
+        if (comment.getCommentStatus() != ContentStatus.PENDING) {
+            throw new IllegalStateException("Only pending comments can be denied");
+        }
+
+        ContentStatus previousStatus = comment.getCommentStatus();
+        comment.setCommentStatus(ContentStatus.DENIED);
+        comment.setUpdatedAt(LocalDateTime.now());
+        commentRepository.save(comment);
+
+        ModerationAction action = ModerationAction.builder()
+                .type(ModerationType.COMMENT)
+                .targetId(commentId)
+                .previousStatus(previousStatus)
+                .newStatus(ContentStatus.DENIED)
+                .reason(reason)
+                .moderator(moderator)
+                .actionAt(LocalDateTime.now())
+                .build();
+        moderationActionRepository.save(action);
+
+        return PostService.mapToCommentDto(comment);
+    }
+
 
     public List<CommentDto> getApprovedComments() {
         return getCommentsByStatus(ContentStatus.APPROVED);

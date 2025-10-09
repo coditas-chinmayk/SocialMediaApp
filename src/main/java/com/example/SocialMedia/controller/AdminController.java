@@ -3,7 +3,6 @@ package com.example.SocialMedia.controller;
 import com.example.SocialMedia.dto.ModeratorRequestDto;
 import com.example.SocialMedia.dto.UserListDto;
 import com.example.SocialMedia.dto.UserResponseDTO;
-import com.example.SocialMedia.service.AdminService;
 import com.example.SocialMedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +16,13 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
-
+   
     @Autowired
     private UserService userService;
 
     @GetMapping("/moderator-requests")
     public ResponseEntity<List<ModeratorRequestDto>> getModeratorRequests() {
-        return ResponseEntity.ok(adminService.getModeratorRequests());
+        return ResponseEntity.ok(userService.getModeratorRequests());
     }
 
     @PostMapping("/moderator-requests/{requestId}/approve")
@@ -33,7 +30,7 @@ public class AdminController {
             @PathVariable Long requestId,
             @RequestBody(required = false) Map<String, String> body) {
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(adminService.approveModeratorRequest(requestId, reason));
+        return ResponseEntity.ok(userService.approveModeratorRequest(requestId, reason));
     }
 
     @PostMapping("/moderator-requests/{requestId}/deny")
@@ -41,7 +38,7 @@ public class AdminController {
             @PathVariable Long requestId,
             @RequestBody Map<String, String> body) {
         String reason = body.get("reason");
-        return ResponseEntity.ok(adminService.denyModeratorRequest(requestId, reason));
+        return ResponseEntity.ok(userService.denyModeratorRequest(requestId, reason));
     }
 
     @PostMapping("/moderators/{userId}/revoke")
@@ -49,7 +46,7 @@ public class AdminController {
             @PathVariable Long userId,
             @RequestBody(required = false) Map<String, String> body) {
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(adminService.revokeModerator(userId, reason));
+        return ResponseEntity.ok(userService.revokeModerator(userId, reason));
     }
 
     @PostMapping("/users")
@@ -58,7 +55,7 @@ public class AdminController {
             @RequestBody(required = false) Map<String, String> reasonBody) {
         Long userId = body.get("userId");
         String reason = reasonBody != null ? reasonBody.get("reason") : null;
-        return ResponseEntity.status(201).body(adminService.createAdmin(userId, reason));
+        return ResponseEntity.status(201).body(userService.createAdmin(userId, reason));
     }
 
     @GetMapping("/users")
