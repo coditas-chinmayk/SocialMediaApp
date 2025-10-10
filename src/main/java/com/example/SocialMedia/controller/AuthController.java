@@ -1,9 +1,10 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.dto.ApiResponseDto;
 import com.example.SocialMedia.dto.UserResponseDTO;
 import com.example.SocialMedia.entity.Role;
 import com.example.SocialMedia.entity.User;
-import com.example.SocialMedia.service.AuthService;
+import com.example.SocialMedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,31 +21,23 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     @Autowired
-    private AuthService authService;
+    private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponseDto<UserResponseDTO>> login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
         String password = request.get("password");
 
-        String token = authService.login(username, password);
-        User user = authService.getUserFromUsername(username);
+        String token = userService.login(username, password);
+        User user = userService.getUserFromUsername(username);
 
         UserResponseDTO userResponse = new UserResponseDTO();
         userResponse.setId(user.getId());
+        userResponse.setToken(token);
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
         userResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
-        response.put("user", Map.of(
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "roles", user.getRoles().stream().map(Role::getName).toList()
-        ));
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "login successful", userResponse));
     }
 }

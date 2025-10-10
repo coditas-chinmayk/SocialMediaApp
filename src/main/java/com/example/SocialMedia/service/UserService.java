@@ -10,8 +10,13 @@ import com.example.SocialMedia.repository.ModerationActionRepository;
 import com.example.SocialMedia.repository.ModeratorRequestRepository;
 import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
+import com.example.SocialMedia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +43,32 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
     private ModerationActionRepository moderationActionRepository;
+
+    /**
+     * Authenticates a user and generates a JWT token.
+     */
+    public String login(String username, String password) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return jwtUtil.generateToken(username);
+    }
+
+    /**
+     * Retrieves a user by username.
+     */
+    public User getUserFromUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+    }
 
     public User signup(String username, String email, String password) {
         if (userRepository.existsByUsername(username)) {

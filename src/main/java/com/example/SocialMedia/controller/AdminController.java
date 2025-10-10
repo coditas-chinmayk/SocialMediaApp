@@ -1,5 +1,6 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.dto.ApiResponseDto;
 import com.example.SocialMedia.dto.ModeratorRequestDto;
 import com.example.SocialMedia.dto.UserListDto;
 import com.example.SocialMedia.dto.UserResponseDTO;
@@ -16,63 +17,62 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-   
     @Autowired
     private UserService userService;
 
     @GetMapping("/moderator-requests")
-    public ResponseEntity<List<ModeratorRequestDto>> getModeratorRequests() {
-        return ResponseEntity.ok(userService.getModeratorRequests());
+    public ResponseEntity<ApiResponseDto<List<ModeratorRequestDto>>> getModeratorRequests() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Moderator requests retrieved successfully", userService.getModeratorRequests()));
     }
 
     @PostMapping("/moderator-requests/{requestId}/approve")
-    public ResponseEntity<ModeratorRequestDto> approveModeratorRequest(
+    public ResponseEntity<ApiResponseDto<ModeratorRequestDto>> approveModeratorRequest(
             @PathVariable Long requestId,
             @RequestBody(required = false) Map<String, String> body) {
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(userService.approveModeratorRequest(requestId, reason));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Moderator request approved successfully", userService.approveModeratorRequest(requestId, reason)));
     }
 
     @PostMapping("/moderator-requests/{requestId}/deny")
-    public ResponseEntity<ModeratorRequestDto> denyModeratorRequest(
+    public ResponseEntity<ApiResponseDto<ModeratorRequestDto>> denyModeratorRequest(
             @PathVariable Long requestId,
             @RequestBody Map<String, String> body) {
         String reason = body.get("reason");
-        return ResponseEntity.ok(userService.denyModeratorRequest(requestId, reason));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Moderator request denied successfully", userService.denyModeratorRequest(requestId, reason)));
     }
 
     @PostMapping("/moderators/{userId}/revoke")
-    public ResponseEntity<UserResponseDTO> revokeModerator(
+    public ResponseEntity<ApiResponseDto<UserResponseDTO>> revokeModerator(
             @PathVariable Long userId,
             @RequestBody(required = false) Map<String, String> body) {
         String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(userService.revokeModerator(userId, reason));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Moderator role revoked successfully", userService.revokeModerator(userId, reason)));
     }
 
     @PostMapping("/users")
-    public ResponseEntity<UserResponseDTO> createAdmin(
+    public ResponseEntity<ApiResponseDto<UserResponseDTO>> createAdmin(
             @RequestBody Map<String, Long> body,
             @RequestBody(required = false) Map<String, String> reasonBody) {
         Long userId = body.get("userId");
         String reason = reasonBody != null ? reasonBody.get("reason") : null;
-        return ResponseEntity.status(201).body(userService.createAdmin(userId, reason));
+        return ResponseEntity.status(201).body(new ApiResponseDto<>(true, "Admin created successfully", userService.createAdmin(userId, reason)));
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<UserListDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<ApiResponseDto<List<UserListDto>>> getAllUsers() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Users retrieved successfully", userService.getAllUsers()));
     }
 
     @GetMapping("/moderators")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<UserListDto>> getAllModerators() {
-        return ResponseEntity.ok(userService.getAllModerators());
+    public ResponseEntity<ApiResponseDto<List<UserListDto>>> getAllModerators() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Moderators retrieved successfully", userService.getAllModerators()));
     }
 
     @GetMapping("/admins")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<UserListDto>> getAllAdmins() {
-        return ResponseEntity.ok(userService.getAllAdmins());
+    public ResponseEntity<ApiResponseDto<List<UserListDto>>> getAllAdmins() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Admins retrieved successfully", userService.getAllAdmins()));
     }
 }

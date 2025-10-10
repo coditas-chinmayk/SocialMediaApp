@@ -1,9 +1,10 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.dto.ApiResponseDto;
 import com.example.SocialMedia.dto.NotificationDto;
 import com.example.SocialMedia.entity.User;
-import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.NotificationService;
+import com.example.SocialMedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,13 +23,13 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @Autowired
-    private AuthService authService;
+    private UserService authService;
 
     @GetMapping
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<List<NotificationDto>> getNotifications() {
+    public ResponseEntity<ApiResponseDto<List<NotificationDto>>> getNotifications() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
-        return ResponseEntity.ok(notificationService.getUserNotifications(user.getId()));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Notifications retrieved successfully", notificationService.getUserNotifications(user.getId())));
     }
 }

@@ -1,11 +1,12 @@
 package com.example.SocialMedia.controller;
 
+import com.example.SocialMedia.dto.ApiResponseDto;
 import com.example.SocialMedia.dto.CommentDto;
 import com.example.SocialMedia.dto.CreateCommentRequest;
 import com.example.SocialMedia.Constants.ContentStatus;
 import com.example.SocialMedia.entity.User;
-import com.example.SocialMedia.service.AuthService;
 import com.example.SocialMedia.service.CommentService;
+import com.example.SocialMedia.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,63 +23,62 @@ public class CommentController {
     private CommentService commentService;
 
     @Autowired
-    private AuthService authService;
+    private UserService authService;
 
     @PostMapping("/posts/{postId}/comment")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<CommentDto> createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
+    public ResponseEntity<ApiResponseDto<CommentDto>> createComment(@PathVariable Long postId, @RequestBody CreateCommentRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
         CommentDto commentDto = commentService.createComment(user.getId(), postId, request);
-        return ResponseEntity.status(201).body(commentDto);
+        return ResponseEntity.status(201).body(new ApiResponseDto<>(true, "comment created", commentDto));
     }
 
     @PutMapping("/comments/{commentId}")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<CommentDto> editFlaggedComment(@PathVariable Long commentId, @RequestBody CreateCommentRequest request) {
+    public ResponseEntity<ApiResponseDto<CommentDto>> editFlaggedComment(@PathVariable Long commentId, @RequestBody CreateCommentRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
         CommentDto commentDto = commentService.editFlaggedComment(commentId, user.getId(), request);
-        return ResponseEntity.ok(commentDto);
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "flagged comment edited", commentDto));
     }
-
 
     @GetMapping("/status/{status}")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<CommentDto>> getCommentsByStatus(@PathVariable ContentStatus status) {
-        return ResponseEntity.ok(commentService.getCommentsByStatus(status));
+    public ResponseEntity<ApiResponseDto<List<CommentDto>>> getCommentsByStatus(@PathVariable ContentStatus status) {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "comment/s retrieved", commentService.getCommentsByStatus(status)));
     }
 
     @GetMapping("/approved")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<List<CommentDto>> getApprovedComments() {
-        return ResponseEntity.ok(commentService.getApprovedComments());
+    public ResponseEntity<ApiResponseDto<List<CommentDto>>> getApprovedComments() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "approved comments retrieved", commentService.getApprovedComments()));
     }
 
     @GetMapping("/pending")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<CommentDto>> getPendingComments() {
-        return ResponseEntity.ok(commentService.getPendingComments());
+    public ResponseEntity<ApiResponseDto<List<CommentDto>>> getPendingComments() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "pending comments retrieved", commentService.getPendingComments()));
     }
 
     @GetMapping("/flagged")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<CommentDto>> getFlaggedComments() {
-        return ResponseEntity.ok(commentService.getFlaggedComments());
+    public ResponseEntity<ApiResponseDto<List<CommentDto>>> getFlaggedComments() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "flagged comments retrieved", commentService.getFlaggedComments()));
     }
 
     @GetMapping("/denied")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<CommentDto>> getDeniedComments() {
-        return ResponseEntity.ok(commentService.getDeniedComments());
+    public ResponseEntity<ApiResponseDto<List<CommentDto>>> getDeniedComments() {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "denied comments retrieved", commentService.getDeniedComments()));
     }
 
     @DeleteMapping("/comments/{commentId}")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<ApiResponseDto<Void>> deleteComment(@PathVariable Long commentId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
         commentService.deleteComment(commentId, user.getId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Comment deleted", null));
     }
 }

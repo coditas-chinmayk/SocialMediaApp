@@ -17,7 +17,7 @@ public class UserSignupDto {
     private String email;
 
     @NotBlank(message = "password cannot be empty")
-    @Pattern(regexp ="^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*?&]{6,}$" , message ="Password must be at least 6 characters and should contain at least 1 number")
+    @Pattern(regexp ="^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@$!%*?&]{6,}$" , message ="Password must be at least 6 characters and should contain at least 1 number and one character")
     @Size(min = 6, max = 15)
     private String password;
 }

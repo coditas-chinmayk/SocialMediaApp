@@ -102,6 +102,13 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    public List<CommentDto> getAllCommentsByPostId(Long postId) {
+        List<Comment> comments = commentRepository.findByPostIdAndCommentStatus(postId, ContentStatus.APPROVED);
+        return comments.stream()
+                .map(PostService::mapToCommentDto)
+                .collect(Collectors.toList());
+    }
+
     public List<CommentDto> getCommentsByStatus(ContentStatus status) {
         return commentRepository.findByCommentStatusOrderByCreatedAtDesc(status).stream()
                 .map(PostService::mapToCommentDto)
