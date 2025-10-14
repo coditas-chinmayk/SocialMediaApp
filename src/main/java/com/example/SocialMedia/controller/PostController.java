@@ -55,10 +55,10 @@ public class PostController {
 
     @PutMapping("/{postId}")
     @PreAuthorize("hasRole('AUTHOR')")
-    public ResponseEntity<ApiResponseDto<EditFlaggedPostDto>> editFlaggedPost(@PathVariable Long postId, @RequestBody CreatePostRequest request) {
+    public ResponseEntity<ApiResponseDto<EditFlaggedPostDto>> editPost(@PathVariable Long postId, @RequestBody CreatePostRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = authService.getUserFromUsername(username);
-        return ResponseEntity.ok(new ApiResponseDto<>(true, "Flagged post edited successfully", postService.editFlaggedPost(postId, user.getId(), request)));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post edited successfully", postService.editPost(postId, user.getId(), request)));
     }
 
     @GetMapping("/status/{status}")

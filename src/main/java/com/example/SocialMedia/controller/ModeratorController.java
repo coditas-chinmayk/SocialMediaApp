@@ -43,8 +43,8 @@ public class ModeratorController {
             @RequestBody(required = false) Map<String, String> body) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
-        String reason = body != null ? body.get("reason") : null;
-        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post approved successfully", postService.approvePost(postId, moderator.getId(), reason)));
+//        String reason = body != null ? body.get("reason") : null;
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post approved successfully", postService.approvePost(postId, moderator.getId())));
     }
 
     @PostMapping("/posts/{postId}/flag")
@@ -55,7 +55,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post flagged successfully", postService.flagPost(postId, moderator.getId(), reason)));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post flagged successfully", postService.flagPost(postId, moderator.getId())));
     }
 
     @PostMapping("/posts/{postId}/deny")
@@ -66,7 +66,7 @@ public class ModeratorController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User moderator = authService.getUserFromUsername(username);
         String reason = body.get("reason");
-        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post denied successfully", postService.denyPost(postId, moderator.getId(), reason)));
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Post denied successfully", postService.denyPost(postId, moderator.getId())));
     }
 
     @GetMapping("/comments/pending")

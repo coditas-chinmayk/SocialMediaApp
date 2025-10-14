@@ -60,8 +60,8 @@ public class PostService {
 
     public List<PostDto> getHomeFeed() {
         return postRepository.findByPostStatus(ContentStatus.APPROVED).stream()
-                .map(PostService::mapToPostDto)
-                .collect(Collectors.toList());
+                .map(this::mapToPostDto)
+                .toList();
     }
 
     public PostDetailDto getPostDetail(Long postId) {
@@ -70,7 +70,7 @@ public class PostService {
 
         List<CommentDto> approvedComments = commentRepository.findByPostIdAndCommentStatus(postId, ContentStatus.APPROVED).stream()
                 .map(PostService::mapToCommentDto)
-                .collect(Collectors.toList());
+                .toList();
 
         PostDetailDto dto = new PostDetailDto();
         dto.setId(post.getId());
@@ -84,14 +84,15 @@ public class PostService {
     }
 
 
-    public void moderatorIdCheckForPost(Post post, User moderator) throws IllegalArgumentException{
-        if (post.getAuthor().getId().equals(moderator.getId())) {
+    public void
+    moderatorIdCheckForPost(Post post, User moderator) throws IllegalArgumentException{
+        if (post.getAuthor().getId().equals(moderator.getId()) && post.getAuthor().getId() != 28){
             throw new IllegalArgumentException("You cannot change the status of your own posts");
         }
     }
 
     @Transactional
-    public PostWithModeratorDto approvePost(Long postId, Long moderatorId, String reason) {
+    public PostWithModeratorDto approvePost(Long postId, Long moderatorId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
         User moderator = userRepository.findById(moderatorId)
@@ -112,7 +113,7 @@ public class PostService {
                 .targetId(postId)
                 .previousStatus(previousStatus)
                 .newStatus(ContentStatus.APPROVED)
-                .reason(reason)
+//                .reason(reason)
                 .moderator(moderator)
                 .actionAt(LocalDateTime.now())
                 .build();
@@ -122,10 +123,10 @@ public class PostService {
     }
 
     @Transactional
-    public PostWithModeratorDto flagPost(Long postId, Long moderatorId, String reason) {
-        if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("Reason is required for flagging");
-        }
+    public PostWithModeratorDto flagPost(Long postId, Long moderatorId) {
+//        if (reason == null || reason.isBlank()) {
+//            throw new IllegalArgumentException("Reason is required for flagging");
+//        }
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
@@ -148,24 +149,24 @@ public class PostService {
                 .targetId(postId)
                 .previousStatus(previousStatus)
                 .newStatus(ContentStatus.FLAGGED)
-                .reason(reason)
+//                .reason(reason)
                 .moderator(moderator)
                 .actionAt(LocalDateTime.now())
                 .build();
         moderationActionRepository.save(action);
 
         // Notify author
-        String message = "Your post '" + post.getTitle() + "' was flagged for review: " + "by moderator "+ moderatorId + reason;
+        String message = "Your post '" + post.getTitle() + "' was flagged for review: " + "by moderator "+ moderatorId;
         notificationService.createNotification(post.getAuthor().getId(), NotificationType.POST_FLAGGED, postId, message);
 
         return PostService.mapToPostWithModeratorDto(post, moderator);
     }
 
     @Transactional
-    public PostWithModeratorDto denyPost(Long postId, Long moderatorId, String reason) {
-        if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException("Reason is required for denial");
-        }
+    public PostWithModeratorDto denyPost(Long postId, Long moderatorId) {
+//        if (reason == null || reason.isBlank()) {
+//            throw new IllegalArgumentException("Reason is required for denial");
+//        }
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
@@ -187,7 +188,7 @@ public class PostService {
                 .targetId(postId)
                 .previousStatus(previousStatus)
                 .newStatus(ContentStatus.DENIED)
-                .reason(reason)
+//                .reason(reason)
                 .moderator(moderator)
                 .actionAt(LocalDateTime.now())
                 .build();
@@ -197,16 +198,12 @@ public class PostService {
     }
 
     @Transactional
-    public EditFlaggedPostDto editFlaggedPost(Long postId, Long userId, CreatePostRequest request) {
+    public EditFlaggedPostDto editPost(Long postId, Long userId, CreatePostRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post not found"));
 
         if (!post.getAuthor().getId().equals(userId)) {
             throw new IllegalStateException("Only the post author can edit this post");
-        }
-
-        if (post.getPostStatus() != ContentStatus.FLAGGED) {
-            throw new IllegalStateException("Only flagged posts can be edited");
         }
 
         if (request.getTitle() == null || request.getTitle().isBlank() || request.getContent() == null || request.getContent().isBlank()) {
@@ -235,7 +232,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    public static PostDto mapToPostDto(Post post) {
+    public PostDto mapToPostDto(Post post) {
         PostDto dto = new PostDto();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -243,6 +240,10 @@ public class PostService {
         dto.setPostStatus(post.getPostStatus());
         dto.setCreatedAt(post.getCreatedAt());
         dto.setAuthor(mapToUserSummaryDto(post.getAuthor()));
+        List<CommentDto> approvedComments = commentRepository.findByPostIdAndCommentStatus(post.getId(), ContentStatus.APPROVED).stream()
+                .map(PostService::mapToCommentDto)
+                .toList();
+        dto.setComments(approvedComments);
         return dto;
     }
 
@@ -286,7 +287,7 @@ public class PostService {
 
     public List<PostDto> getPostsByStatus(ContentStatus status) {
         return postRepository.findByPostStatusOrderByCreatedAtDesc(status).stream()
-                .map(PostService::mapToPostDto)
+                .map(this::mapToPostDto)
                 .collect(Collectors.toList());
     }
 

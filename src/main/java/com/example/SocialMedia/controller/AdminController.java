@@ -75,4 +75,14 @@ public class AdminController {
     public ResponseEntity<ApiResponseDto<List<UserListDto>>> getAllAdmins() {
         return ResponseEntity.ok(new ApiResponseDto<>(true, "Admins retrieved successfully", userService.getAllAdmins()));
     }
+
+    @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<ApiResponseDto<UserResponseDTO>> getUserByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "User retrieved successfully", userService.getUserByUserId(userId)));
+    }
+//
+//    @DeleteMapping("/users/delete/{userId}")
+//    @PreAuthorize("hasRole('SUPER_ADMIN')")
+//    public ResponseEntity<ApiResponseDto<>>
 }

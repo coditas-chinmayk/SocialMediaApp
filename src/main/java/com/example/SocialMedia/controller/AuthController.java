@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,16 +28,37 @@ public class AuthController {
         String username = request.get("username");
         String password = request.get("password");
 
+        // Basic validation (add more in production, e.g., check null/empty via @Valid or manually)
+        if (username == null || password == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponseDto<>(false, "Username and password are required", null));
+        }
+
         String token = userService.login(username, password);
         User user = userService.getUserFromUsername(username);
 
+        // Assuming UserResponseDTO has a setRole(String role) setter; adjust if needed
         UserResponseDTO userResponse = new UserResponseDTO();
         userResponse.setId(user.getId());
         userResponse.setToken(token);
         userResponse.setUsername(user.getUsername());
         userResponse.setEmail(user.getEmail());
-        userResponse.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+
+        // Compute highest role (null-safe)
+        Set<Long> roleIds = (user.getRoles() != null)
+                ? user.getRoles().stream().map(Role::getId).collect(Collectors.toSet())
+                : Set.of();
+        String finalRole = getHighestRole(roleIds);
+        userResponse.setRole(finalRole);  // Changed from setRoles(Set<String>) to setRole(String)
 
         return ResponseEntity.ok(new ApiResponseDto<>(true, "login successful", userResponse));
+    }
+
+    // Extracted private method for highest role logic (cleaner and reusable)
+    private String getHighestRole(Set<Long> roleIds) {
+        if (roleIds.contains(4L)) return "SUPER_ADMIN";
+        if (roleIds.contains(3L)) return "ADMIN";
+        if (roleIds.contains(2L)) return "MODERATOR";
+        return "AUTHOR";
     }
 }

@@ -58,6 +58,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDto<Map<String, Object>>> handleAllOther(Exception e) {
         Map<String, Object> data = new HashMap<>();
         data.put("error", e.getMessage());
+
         data.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponseDto<>(false, "An unexpected error occurred", data));

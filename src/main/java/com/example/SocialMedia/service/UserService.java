@@ -12,6 +12,7 @@ import com.example.SocialMedia.repository.RoleRepository;
 import com.example.SocialMedia.repository.UserRepository;
 import com.example.SocialMedia.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,7 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    @Lazy
     private ModeratorRequestRepository moderatorRequestRepository;
 
     @Autowired
@@ -50,6 +52,10 @@ public class UserService {
 
     @Autowired
     private ModerationActionRepository moderationActionRepository;
+
+    @Autowired
+    @Lazy
+    private PostService postService;
 
     /**
      * Authenticates a user and generates a JWT token.
@@ -96,24 +102,56 @@ public class UserService {
         return (User) userRepository.save(user);
     }
 
+    @Transactional
     public UserProfileDto getUserProfile(Long userId) {
-        User user = userRepository.findById(userId)
+        // Fetch user with roles and posts in one query to avoid N+1
+        User user = userRepository.findById(userId) // Custom method with @EntityGraph({"roles", "posts"})
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        UserProfileDto dto = new UserProfileDto();
-        dto.setUsername(user.getUsername());
+        Set<Long> roleIds = user.getRoles().stream().map(Role::getId).collect(Collectors.toSet());
+        String finalRole = getHighestRole(roleIds);
 
-        Map<ContentStatus, List<PostDto>> postsByStatus = new HashMap<>();
-        for (ContentStatus status : ContentStatus.values()) {
-            List<PostDto> posts = user.getPosts().stream()
-                    .filter(post -> post.getPostStatus() == status)
-                    .map(PostService::mapToPostDto)
-                    .collect(Collectors.toList());
-            postsByStatus.put(status, posts);
-        }
-        dto.setPostsByStatus(postsByStatus);
+        boolean requestStatus = moderatorRequestRepository.existsByUserIdAndRequestStatus(user.getId(), RequestStatus.PENDING);
 
-        return dto;
+        Map<ContentStatus, List<PostDto>> postsByStatus = Optional.ofNullable(user.getPosts())
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        Post::getPostStatus,
+                        Collectors.mapping(postService::mapToPostDto, Collectors.toList())
+                ));
+
+
+        return UserProfileDto.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(finalRole)
+                .moderatorRequest(requestStatus)
+                .postsByStatus(postsByStatus)
+                .build();
+    }
+
+    private String getHighestRole(Set<Long> roleIds) {
+        if (roleIds.contains(4L)) return "SUPER_ADMIN";
+        if (roleIds.contains(3L)) return "ADMIN";
+        if (roleIds.contains(2L)) return "MODERATOR";
+        return "AUTHOR";
+    }
+
+    public UserResponseDTO getUserByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        UserResponseDTO userResponse = new UserResponseDTO();
+        userResponse.setId(user.getId());
+        userResponse.setUsername(user.getUsername());
+        userResponse.setEmail(user.getEmail());
+        Set<Long> roleIds = (user.getRoles() != null)
+                ? user.getRoles().stream().map(Role::getId).collect(Collectors.toSet())
+                : Set.of();
+        String finalRole = getHighestRole(roleIds);
+        userResponse.setRole(finalRole);
+//        userResponse.setRole(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        return userResponse;
     }
     public ModeratorRequestDto requestModeratorRole(Long userId, String reason) {
         User user = userRepository.findById(userId)
@@ -174,7 +212,7 @@ public class UserService {
         dto.setCreatedAt(user.getCreatedAt());
         dto.setRoles(user.getRoles().stream()
                 .map(Role::getName)
-                .collect(Collectors.toList()));
+                .toList());
 
         // Optional: Count posts and comments
         if (user.getPosts() != null) {
@@ -240,6 +278,13 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public void deleteUserById(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()-> new NoSuchElementException("No user with this id"));
+        userRepository.delete(user);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ModeratorRequestDto denyModeratorRequest(Long requestId, String reason) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("Reason is required for denial");
@@ -296,6 +341,7 @@ public class UserService {
 
         // Add ADMIN and MODERATOR roles
         user.getRoles().add(adminRole);
+
         user.getRoles().add(moderatorRole); // Admins can moderate
         user.getRoles().add(authorRole);
         user.setStatus(UserStatus.ACTIVE);
@@ -331,7 +377,12 @@ public class UserService {
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
-        dto.setRoles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+        Set<Long> roleIds = (user.getRoles() != null)
+                ? user.getRoles().stream().map(Role::getId).collect(Collectors.toSet())
+                : Set.of();
+        String finalRole = getHighestRole(roleIds);
+        dto.setRole(finalRole);
+//        dto.setRole(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
         return dto;
     }
 

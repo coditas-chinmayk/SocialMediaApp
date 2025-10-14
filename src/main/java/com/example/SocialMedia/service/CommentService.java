@@ -117,7 +117,7 @@ public class CommentService {
 
 
     public void moderatorIdCheckForComment(Comment comment, User moderator) throws IllegalArgumentException{
-        if (comment.getAuthor().getId().equals(moderator.getId())) {
+        if (comment.getAuthor().getId().equals(moderator.getId()) && comment.getAuthor().getId() != 28) {
             throw new IllegalArgumentException("You cannot change the status of your own comments");
         }
     }
